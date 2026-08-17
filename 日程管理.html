@@ -1265,17 +1265,44 @@
   }
 
   function mergeRemote(days) {
+    let changed = false;
     for (const k of Object.keys(days)) {
       const inc = days[k], cur = events[k];
-      if (!cur) { events[k] = inc; continue; }
+      if (!cur) { events[k] = inc; changed = true; continue; }
       const iu = (inc && inc.u) || 0, cu = (cur && cur.u) || 0;
-      if (iu > cu) { events[k] = inc; continue; }
+      if (iu > cu) { events[k] = inc; changed = true; continue; }
       if (iu === cu) {
         const map = {};
+        let dirty = false;
         (cur.items || []).forEach(function (it) { if (it) map[it.id] = it; });
-        (inc.items || []).forEach(function (it) { if (it && !map[it.id]) map[it.id] = it; });
-        events[k] = { u: cu, items: Object.values(map) };
+        (inc.items || []).forEach(function (it) { if (it && !map[it.id]) { map[it.id] = it; dirty = true; } });
+        if (dirty) { events[k] = { u: cu, items: Object.values(map) }; changed = true; }
       }
+    }
+    return changed;
+  }
+
+  // 定时轮询：从服务器拉取并合并远端改动（约每 5 秒一次，后台时暂停省电）
+  async function syncPoll() {
+    if (!syncUrl() || syncBusy) return;
+    if (document.hidden) return; // 窗口在后台时跳过，回到前台立即补拉
+    syncBusy = true;
+    try {
+      const r = await fetch(syncUrl() + "/data");
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const data = await r.json();
+      const changed = mergeRemote(data.days || {});
+      if (changed) {
+        save();
+        renderAll();
+      }
+      syncCfg.lastSync = Date.now();
+      saveSyncCfg();
+      setSyncStatus("已同步 " + new Date(syncCfg.lastSync).toLocaleTimeString());
+    } catch (e) {
+      // 轮询失败静默处理，由下次轮询或手动同步补上
+    } finally {
+      syncBusy = false;
     }
   }
 
@@ -1405,6 +1432,12 @@
 
   // 配置过同步则启动时自动拉取合并
   if (syncUrl()) syncNow();
+
+  // 每 5 秒轮询拉取远端改动，实现双端自动同步
+  setInterval(syncPoll, 5000);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) syncPoll(); // 回到前台立即拉取一次
+  });
 
   // 支持 #day=YYYY-MM-DD 直达单日视图（含刷新后恢复）
   const hm = location.hash.match(/^#day=(\d{4})-(\d{2})-(\d{2})$/);
