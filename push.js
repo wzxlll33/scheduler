@@ -48,14 +48,15 @@ try {
   const files = [
     "日程管理.html", "main.js", "package.json", "package-lock.json", "gen-icon.js",
     "icon.png", "icon.ico", "sync-server.js", "README.md", ".gitignore",
-    "使用说明.md", "启动同步服务器.bat", "重建.bat", "推送GitHub.bat", "rebuild.js", "push.js",
-    "Daily-Schedule.apk"
+    "使用说明.md", "GUIDE.md", "启动同步服务器.bat", "重建.bat", "推送GitHub.bat", "rebuild.js", "push.js",
+    "build-web.js", "Daily-Schedule.apk"
   ];
   for (const f of files) {
     fs.copyFileSync(path.join(PF, f), path.join(WORK, f));
   }
   fs.cpSync(path.join(PF, "cloud-deploy"), path.join(WORK, "cloud-deploy"), { recursive: true, filter: keep });
   fs.cpSync(path.join(PF, "mobile"), path.join(WORK, "mobile"), { recursive: true, filter: keep });
+  fs.cpSync(path.join(PF, "web"), path.join(WORK, "web"), { recursive: true, filter: keep });
 
   run("git add -A", { cwd: WORK });
   try {

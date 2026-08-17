@@ -1,10 +1,13 @@
 # 📅 Daily Schedule 日程管理
 
-一款简约的日程管理应用，支持 **Windows 桌面版** 与 **Android 手机版**，手机与电脑通过云端**随时随地自动同步**。
+一款简约的日程管理应用，支持 **Windows 桌面版**、**Android 手机版** 与 **网页版（iPhone 可直接用）**，手机与电脑通过云端**随时随地自动同步**。
 
 - 桌面版：Electron
-- 手机版：Capacitor 8
-- 同步：零依赖 Node 同步服务器（自建或免费云部署，地址自由配置）
+- 手机版：Capacitor 8（APK）
+- 网页版：纯静态 PWA（`node build-web.js` 生成，部署到任意静态托管）
+- 同步：零依赖 Node 同步服务器（自建或免费云部署，地址自由配置，一人一服务器 = 一人一份数据）
+
+> 📘 **完整使用与开发指南（含 AI agent 速查）见 [`GUIDE.md`](./GUIDE.md)** —— 构建、部署、修改、排查全流程。
 
 ---
 
@@ -98,12 +101,36 @@ gradlew.bat assembleDebug
 ```
 产物位于 `app\build\outputs\apk\debug\app-debug.apk`。
 
+### 网页版（iPhone / 浏览器直接使用，无需开发者账号）
+
+应用是纯 HTML 单文件，可部署为网站，手机浏览器打开即用（iPhone 可"添加到主屏幕"变成全屏 App）。
+
+**1. 生成网页版站点**
+```bash
+node build-web.js
+```
+生成 `web/` 目录（index.html + manifest.json + sw.js + icons/）。
+
+**2. 部署网站（任选免费静态托管）**
+- **Render 静态站**：New → Static Site → 连接本仓库 → Root Directory 填 `web` → 创建，得到 `https://xxx.onrender.com`
+- Vercel / Cloudflare Pages：连接仓库后设置根目录为 `web` 即可
+
+**3. 部署同步服务器（自己用，数据独立）**
+- New → Web Service → 连接本仓库（或只传 `sync-server.js` + `package.json`）→ Start Command: `node sync-server.js` → 得到 `https://xxx.onrender.com`（同步服务器）
+
+**4. 使用**
+- 手机打开网站地址 → Safari 分享 → **添加到主屏幕**
+- 应用里点 **☁ 同步** → 填你自己的同步服务器地址 → 保存并连接
+- 每人用自己的服务器 = 数据互不相通
+
+> 提示：修改 `日程管理.html` 后重新运行 `node build-web.js` 再部署/推送即可。
+
 ---
 
 ## 📁 目录结构
 
 ```
-├── 日程管理.html        # 应用主体（单文件，桌面/手机共用）
+├── 日程管理.html        # 应用主体（单文件，桌面/手机/网页共用）
 ├── main.js              # Electron 主进程
 ├── package.json         # 桌面版依赖
 ├── sync-server.js       # 同步服务器（零依赖）
@@ -111,8 +138,12 @@ gradlew.bat assembleDebug
 ├── mobile/              # Capacitor 移动工程
 │   ├── www/             # 手机版页面（index.html 拷贝）
 │   └── android/         # 安卓原生工程
+├── build-web.js         # 网页版生成脚本（生成 web/ 目录）
+├── web/                 # 网页版静态站点（部署用，由 build-web.js 生成）
+├── web-icons/           # PWA 图标源文件（180/192/512）
 ├── Daily-Schedule.apk   # 安卓安装包（构建产物）
 ├── 启动同步服务器.bat    # 一键启动本地同步
+├── 重建.bat / push.js   # 一键重建 / 一键推送 GitHub 脚本
 └── 使用说明.md           # 详细使用说明
 ```
 
