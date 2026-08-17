@@ -1,6 +1,6 @@
 # 📅 Daily Schedule 日程管理
 
-一款简约的日程管理应用，支持 **Windows 桌面版** 与 **Android 手机版**，手机与电脑通过云端**随时随地自动同步**。
+一款简约的日程管理应用，支持 **Windows 桌面版** 与 **Android 手机版**，手机与电脑通过云端同步。
 
 - 桌面版：Electron
 - 手机版：Capacitor 8
