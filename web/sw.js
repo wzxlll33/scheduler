@@ -12,6 +12,8 @@ self.addEventListener("activate", function (e) {
 });
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  var url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return; // 跨域请求（如同步服务器 /data）不缓存，直连网络
   e.respondWith(
     caches.match(e.request).then(function (hit) {
       return hit || fetch(e.request).then(function (res) {

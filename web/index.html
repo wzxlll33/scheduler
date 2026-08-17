@@ -1291,7 +1291,7 @@
     if (document.hidden) return; // 窗口在后台时跳过，回到前台立即补拉
     syncBusy = true;
     try {
-      const r = await fetch(syncUrl() + "/data");
+      const r = await fetch(syncUrl() + "/data", { cache: "no-store" });
       if (!r.ok) throw new Error("HTTP " + r.status);
       const data = await r.json();
       const changed = mergeRemote(data.days || {});
@@ -1310,7 +1310,7 @@
   }
 
   async function syncPull() {
-    const r = await fetch(syncUrl() + "/data");
+    const r = await fetch(syncUrl() + "/data", { cache: "no-store" });
     if (!r.ok) throw new Error("HTTP " + r.status);
     const data = await r.json();
     mergeRemote(data.days || {});
