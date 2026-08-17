@@ -103,18 +103,21 @@
   body.big-mode .cal-head .month { font-size: 22px; }
   body.big-mode .cal-nav button { width: 34px; height: 34px; font-size: 18px; }
   body.big-mode .weekdays div { font-size: 15px; padding: 6px 0; }
-  body.big-mode .days { grid-auto-rows: 84px; }
+  body.big-mode .days { grid-auto-rows: 96px; }
   body.big-mode .day {
     min-height: 0;
-    padding: 8px;
-    border-radius: 16px;
-    gap: 4px;
+    padding: 6px 8px;
+    border-radius: 14px;
+    gap: 2px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
   }
-  body.big-mode .day .dnum { font-size: clamp(14px, 2.4vh, 20px); font-weight: 600; }
+  body.big-mode .day .dnum { font-size: clamp(13px, 2.2vh, 18px); font-weight: 700; }
+  body.big-mode .mini-evt { font-size: 11px; padding: 2px 4px; border-radius: 6px; }
+  body.big-mode .day .more { font-size: 11px; }
   body.big-mode .cal-legend { font-size: 14px; margin-top: 10px; }
 
   /* ---------- 主体布局 ---------- */
@@ -200,9 +203,12 @@
     text-overflow: ellipsis;
   }
   .mini-evt.done-m { background: #f1ebe3; color: var(--done); text-decoration: line-through; }
+  .mini-evt.star-m { font-weight: 700; color: var(--primary-deep); background: #fde3d8; }
+  .day.selected .mini-evt.star-m { color: #fff; font-weight: 700; background: rgba(255,255,255,.35); }
   .day.selected .mini-evt { background: rgba(255,255,255,.3); color: #fff; }
   .day.selected .mini-evt.done-m { background: rgba(255,255,255,.16); color: rgba(255,255,255,.8); }
-  .day .more { font-size: 13px; color: var(--text-light); text-align: left; }
+  .day .more { font-size: 13px; color: var(--primary-deep); text-align: left; cursor: pointer; font-weight: 700; }
+  .day .more:hover { color: var(--accent); }
   .day.selected .more { color: rgba(255,255,255,.85); }
   .cal-legend {
     margin-top: 14px;
@@ -375,6 +381,20 @@
     border-color: transparent;
     color: #fff;
   }
+  .star-toggle {
+    width: 28px; height: 28px; min-width: 28px;
+    border: none;
+    background: transparent;
+    color: #d8c4b0;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    border-radius: 50%;
+  }
+  .star-toggle:hover { background: var(--accent-soft); color: var(--accent); }
+  .star-toggle.on { color: #f4a261; }
+  .ev-item.star .ev-text { color: var(--primary-deep); font-weight: 600; }
   .ev-time {
     font-size: 15px;
     font-weight: 600;
@@ -584,6 +604,51 @@
   .modal-btn.danger { color: #e0564a; }
   .modal-btn.danger:hover { border-color: #e0564a; background: #fde3d8; }
 
+  /* 事项详情弹窗 */
+  .detail-time-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .detail-input {
+    width: 100%;
+    border: 2px solid #f0dfcd;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 16px;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    transition: border .2s;
+    margin-bottom: 14px;
+  }
+  .detail-input:focus { border-color: var(--accent); }
+  .detail-note {
+    width: 100%;
+    min-height: 110px;
+    border: 2px solid #f0dfcd;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #fff;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    transition: border .2s;
+    font-family: inherit;
+  }
+  .detail-note:focus { border-color: var(--accent); }
+  .star-btn {
+    border: 1.5px solid #f0dfcd;
+    background: #fff;
+    color: #b9a89a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .star-btn:hover { border-color: var(--accent); }
+  .star-btn.on { border-color: #f4a261; background: #fef3e3; color: #f4a261; font-weight: 700; }
+
   /* 手机版（Capacitor 打包）仅紧凑视图：隐藏模式切换按钮 */
   .mobile-app .mode-switch { display: none; }
 
@@ -646,9 +711,11 @@
     body.big-mode .main { margin-top: 8px; min-height: calc(100vh - 120px); align-items: center; }
     body.big-mode .card { padding: 8px; }
     body.big-mode .weekdays div { font-size: 12px; padding: 3px 0; }
-    body.big-mode .days { grid-auto-rows: 56px; }
-    body.big-mode .day { padding: 4px 2px; border-radius: 10px; }
-    body.big-mode .day .dnum { font-size: clamp(13px, 2.6vh, 18px); font-weight: 600; }
+    body.big-mode .days { grid-auto-rows: 68px; }
+    body.big-mode .day { padding: 3px 3px; border-radius: 10px; gap: 1px; }
+    body.big-mode .day .dnum { font-size: clamp(12px, 2.4vh, 16px); font-weight: 700; }
+    body.big-mode .mini-evt { font-size: 10px; padding: 1px 3px; border-radius: 5px; }
+    body.big-mode .day .more { font-size: 10px; }
     body.big-mode .cal-head { margin-bottom: 6px; }
     body.big-mode .cal-head .month { font-size: 18px; }
     body.big-mode .cal-nav button { width: 32px; height: 32px; font-size: 17px; }
@@ -796,6 +863,47 @@
   </div>
 </div>
 
+<!-- 事项详情弹窗（备注 / 修改时间 / 重点标记） -->
+<div class="modal-mask" id="evDetailMask" style="display:none" onclick="if(event.target===this)closeDetail()">
+  <div class="modal">
+    <div class="modal-head">
+      <span>事项详情</span>
+      <button class="modal-x" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label">时间（可修改，空 = 全天）</label>
+      <div class="detail-time-row">
+        <div class="time-picker" id="detailTimeField">
+          <input type="text" id="detailTime" class="time-native" readonly placeholder="全天">
+          <div class="time-pop" id="detailTimePop">
+            <div class="tp-head">
+              <span class="tp-prev" id="detailTimePrev">全天</span>
+              <button type="button" class="tp-btn" id="detailTimeClear">清除</button>
+            </div>
+            <div class="tp-cols">
+              <div class="tp-col"><div class="tp-col-title">时</div><div class="tp-wheel" id="detailHourWheel"></div></div>
+              <div class="tp-col"><div class="tp-col-title">分</div><div class="tp-wheel" id="detailMinWheel"></div></div>
+            </div>
+            <div class="tp-foot">
+              <button type="button" class="tp-btn" id="detailTimeNow">现在</button>
+              <button type="button" class="tp-btn tp-ok" id="detailTimeOk">确定</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="star-btn" id="detailStarBtn" onclick="toggleDetailStar()">☆ 标记为重点</button>
+      </div>
+      <label class="modal-label">内容</label>
+      <input type="text" id="detailText" class="detail-input" maxlength="60">
+      <label class="modal-label">备注（仅点进事项可见）</label>
+      <textarea id="detailNote" class="detail-note" placeholder="写下工作流程、补充说明…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn danger" onclick="deleteDetail()">删除</button>
+      <button class="modal-btn primary" onclick="saveDetail()">保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- 云端同步设置弹窗 -->
 <div class="modal-mask" id="syncMask" style="display:none" onclick="if(event.target===this)closeSyncPanel()">
   <div class="modal">
@@ -880,9 +988,17 @@
       return ta < tb ? -1 : ta > tb ? 1 : 0;
     });
   }
+  // 排序：重点事项优先，其余按时间
+  function sortEvents(list) {
+    return list.slice().sort(function (a, b) {
+      if (!!a.star !== !!b.star) return a.star ? -1 : 1;
+      const ta = a.time || "99:99", tb = b.time || "99:99";
+      return ta < tb ? -1 : ta > tb ? 1 : 0;
+    });
+  }
   function isBig() { return document.body.classList.contains("big-mode"); }
   // 每个日期格子最多显示的事件条数：仅紧凑视图显示
-  function maxMiniShown() { return 2; }
+  function maxMiniShown() { return 3; }
 
   /* ---------- 渲染：头部 ---------- */
   function renderHeader() {
@@ -926,23 +1042,25 @@
       dnum.textContent = d;
       btn.appendChild(dnum);
 
-      // 大日历模式：格子只显示数字，点击跳转到单日日程管理
-      // 紧凑视图：格子里显示当天事件预览
-      if (!isBig()) {
-        const dayEvents = sortByTime(dayItems(k));
-        dayEvents.slice(0, maxMiniShown()).forEach(function (ev) {
-          const mini = document.createElement("div");
-          mini.className = "mini-evt" + (ev.done ? " done-m" : "");
-          mini.textContent = (ev.time ? ev.time + " " : "") + ev.text;
-          mini.title = (ev.time ? ev.time + " " : "") + ev.text;
-          btn.appendChild(mini);
+      // 日历格子显示当天事项：重点优先、按时间排序，最多 3 条，其余用省略号（点击省略号进入单日管理）
+      const dayEvents = sortEvents(dayItems(k));
+      dayEvents.slice(0, maxMiniShown()).forEach(function (ev) {
+        const mini = document.createElement("div");
+        mini.className = "mini-evt" + (ev.done ? " done-m" : "") + (ev.star ? " star-m" : "");
+        mini.textContent = (ev.star ? "★ " : "") + ev.text; // 只显示事项文字，不显示时间
+        mini.title = ev.text;
+        btn.appendChild(mini);
+      });
+      if (dayEvents.length > maxMiniShown()) {
+        const more = document.createElement("div");
+        more.className = "more";
+        more.textContent = "…";
+        more.title = "还有 " + (dayEvents.length - maxMiniShown()) + " 项，点击查看";
+        more.addEventListener("click", function (e) {
+          e.stopPropagation();
+          openDayView(date);
         });
-        if (dayEvents.length > maxMiniShown()) {
-          const more = document.createElement("div");
-          more.className = "more";
-          more.textContent = "+" + (dayEvents.length - maxMiniShown()) + " 项";
-          btn.appendChild(more);
-        }
+        btn.appendChild(more);
       }
 
       if (sameDay(date, new Date())) btn.classList.add("today");
@@ -1049,11 +1167,11 @@
     const box = document.getElementById(els.list);
     box.innerHTML = "";
 
-    const sorted = sortByTime(list);
+    const sorted = sortEvents(list);
 
     sorted.forEach(function (ev) {
       const item = document.createElement("div");
-      item.className = "ev-item" + (ev.done ? " done" : "");
+      item.className = "ev-item" + (ev.done ? " done" : "") + (ev.star ? " star" : "");
 
       const check = document.createElement("button");
       check.className = "check";
@@ -1067,6 +1185,18 @@
         schedulePush();
       });
 
+      const star = document.createElement("button");
+      star.className = "star-toggle" + (ev.star ? " on" : "");
+      star.title = ev.star ? "取消重点" : "标记为重点";
+      star.textContent = ev.star ? "★" : "☆";
+      star.addEventListener("click", function () {
+        ev.star = !ev.star;
+        touchDay(k);
+        save();
+        renderAll();
+        schedulePush();
+      });
+
       const time = document.createElement("span");
       time.className = "ev-time";
       time.textContent = ev.time || "全天";
@@ -1074,6 +1204,7 @@
       const text = document.createElement("span");
       text.className = "ev-text";
       text.textContent = ev.text;
+      text.title = "点击查看详情 / 备注";
 
       const del = document.createElement("button");
       del.className = "del-btn";
@@ -1087,7 +1218,13 @@
         schedulePush();
       });
 
+      item.addEventListener("click", function (e) {
+        if (e.target.closest("button")) return; // 按钮点击不打开详情
+        openDetail(k, ev.id);
+      });
+
       item.appendChild(check);
+      item.appendChild(star);
       item.appendChild(time);
       item.appendChild(text);
       item.appendChild(del);
@@ -1123,6 +1260,64 @@
       empty: "dayEmpty", list: "dayList",
       statText: "dayStatText", statBar: "dayStatBar", statPct: "dayStatPct"
     }, { year: true });
+  }
+
+  /* ---------- 事项详情（备注 / 修改时间 / 重点标记） ---------- */
+  let detailK = null, detailId = null, detailStar = false;
+
+  function findEvent(k, id) {
+    const items = dayItems(k);
+    for (let i = 0; i < items.length; i++) if (items[i].id === id) return items[i];
+    return null;
+  }
+  function renderDetailStar() {
+    const b = document.getElementById("detailStarBtn");
+    b.textContent = detailStar ? "★ 重点" : "☆ 标记为重点";
+    b.classList.toggle("on", detailStar);
+  }
+  function openDetail(k, id) {
+    const ev = findEvent(k, id);
+    if (!ev) return;
+    detailK = k; detailId = id;
+    detailStar = !!ev.star;
+    document.getElementById("detailTime").value = ev.time || "";
+    document.getElementById("detailText").value = ev.text;
+    document.getElementById("detailNote").value = ev.note || "";
+    renderDetailStar();
+    document.getElementById("evDetailMask").style.display = "flex";
+  }
+  function toggleDetailStar() {
+    detailStar = !detailStar;
+    renderDetailStar();
+  }
+  function closeDetail() { document.getElementById("evDetailMask").style.display = "none"; }
+  function saveDetail() {
+    const pk = pickers.detail;
+    if (pk) pk.commitDraft(); // 时间选择面板开着但未点确定时，先提交
+    const ev = findEvent(detailK, detailId);
+    if (!ev) return;
+    const text = document.getElementById("detailText").value.trim();
+    if (text) ev.text = text;
+    ev.time = document.getElementById("detailTime").value || "";
+    ev.note = document.getElementById("detailNote").value || "";
+    ev.star = detailStar;
+    touchDay(detailK);
+    save();
+    renderAll();
+    schedulePush();
+    closeDetail();
+  }
+  function deleteDetail() {
+    const ev = findEvent(detailK, detailId);
+    if (!ev) return;
+    const items = events[detailK] ? events[detailK].items : [];
+    const i = items.indexOf(ev);
+    if (i >= 0) items.splice(i, 1);
+    touchDay(detailK);
+    save();
+    renderAll();
+    schedulePush();
+    closeDetail();
   }
 
   /* ---------- 时间选择弹层（美化选择页） ---------- */
@@ -1423,6 +1618,11 @@
     hourWheel: "dayHourWheel", minWheel: "dayMinWheel", prev: "dayTimePrev",
     now: "dayTimeNow", clear: "dayTimeClear", ok: "dayTimeOk"
   });
+  initTimePicker({
+    key: "detail", field: "detailTimeField", input: "detailTime", pop: "detailTimePop",
+    hourWheel: "detailHourWheel", minWheel: "detailMinWheel", prev: "detailTimePrev",
+    now: "detailTimeNow", clear: "detailTimeClear", ok: "detailTimeOk"
+  });
 
   // 恢复上次使用的模式
   try {
@@ -1462,6 +1662,10 @@
   window.saveSync = saveSync;
   window.clearSync = clearSync;
   window.syncNow = syncNow;
+  window.closeDetail = closeDetail;
+  window.saveDetail = saveDetail;
+  window.deleteDetail = deleteDetail;
+  window.toggleDetailStar = toggleDetailStar;
 })();
 </script>
 <script>if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); }); }</script>
