@@ -475,6 +475,12 @@
     backdrop-filter: blur(4px);
   }
   .sync-btn:hover { background: rgba(255,255,255,.34); transform: translateY(-1px); }
+  .sync-btn.sync-busy { animation: syncPulse 1.1s ease infinite; }
+  @keyframes syncPulse {
+    0%, 100% { background: rgba(255,255,255,.22); }
+    50% { background: rgba(255,255,255,.5); }
+  }
+  .sync-btn.sync-fail { background: #e0564a; }
 
   /* ---------- 同步设置弹窗 ---------- */
   .modal-mask {
@@ -1252,7 +1258,7 @@
   }
 
   /* ---------- 云端同步 ---------- */
-  let syncBusy = false, syncTimer = null;
+  let syncBusy = false, syncTimer = null, syncRetryTimer = null, syncFails = 0;
   function syncUrl() {
     if (syncCfg.enabled === false) return "";
     return (syncCfg.url || "").replace(/\/+$/, "");
@@ -1298,9 +1304,18 @@
       await syncPush();
       syncCfg.lastSync = Date.now();
       saveSyncCfg();
+      syncFails = 0;
       setSyncStatus("已同步 " + new Date(syncCfg.lastSync).toLocaleTimeString());
     } catch (e) {
-      setSyncStatus("连接失败，请检查地址和网络");
+      syncFails++;
+      setSyncStatus("连接失败，将自动重试");
+      // 自动同步失败后按 10s / 20s / 30s 自动重试（最多 3 次），期间也可手动点"立即同步"
+      if (syncFails < 4 && syncRetryTimer == null) {
+        syncRetryTimer = setTimeout(function () {
+          syncRetryTimer = null;
+          syncNow();
+        }, syncFails * 10000);
+      }
     } finally {
       syncBusy = false;
       save();
@@ -1309,8 +1324,12 @@
   }
   function schedulePush() {
     if (!syncUrl()) return;
+    if (syncRetryTimer) { clearTimeout(syncRetryTimer); syncRetryTimer = null; syncFails = 0; }
     if (syncTimer) clearTimeout(syncTimer);
-    syncTimer = setTimeout(syncNow, 1500);
+    syncTimer = setTimeout(function () {
+      syncTimer = null;
+      syncNow();
+    }, 600);
   }
 
   /* ---------- 同步设置面板 ---------- */
@@ -1347,6 +1366,12 @@
   function setSyncStatus(msg) {
     const el = document.getElementById("syncStatus");
     if (el) el.textContent = msg;
+    // 同步按钮状态提示：失败变红、同步中闪烁
+    const btn = document.getElementById("syncBtn");
+    if (btn) {
+      btn.classList.toggle("sync-fail", msg.indexOf("连接失败") === 0 || msg.indexOf("重试") >= 0);
+      btn.classList.toggle("sync-busy", msg.indexOf("同步中") >= 0);
+    }
   }
 
   /* ---------- 初始化 ---------- */
