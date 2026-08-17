@@ -798,11 +798,10 @@
       <label class="modal-label" for="syncUrlInput">同步服务器地址</label>
       <input type="text" id="syncUrlInput" placeholder="https://你的服务器地址 或 http://192.168.x.x:3000">
       <div class="sync-tips">
-        <p>✅ <b>默认已连接官方同步服务器</b>（<code>scheduler-new.onrender.com</code>），打开应用即自动同步，无需任何设置。</p>
-        <p>🛠 <b>想换自己的服务器</b>（自建或局域网）：把上面地址改成你的服务器地址，点"保存并连接"即可。</p>
+        <p>🛠 <b>使用你自己的服务器</b>：电脑上运行 <code>node sync-server.js</code>（或部署到 Render 等免费云平台），把服务器地址填到上面，点"保存并连接"。</p>
         <p>💡 手机和电脑使用<b>同一个地址</b>，数据自动合并同步。</p>
       </div>
-      <div class="sync-status" id="syncStatus">默认服务器: https://scheduler-new.onrender.com · 上次同步 从未</div>
+      <div class="sync-status" id="syncStatus">未配置同步地址</div>
     </div>
     <div class="modal-foot">
       <button class="modal-btn danger" onclick="clearSync()">断开同步</button>
@@ -847,7 +846,6 @@
 
   /* ---------- 同步配置 ---------- */
   const SYNC_KEY = "dailyScheduleSync_v1";
-  const DEFAULT_SYNC_URL = "https://scheduler-new.onrender.com";
   let syncCfg = loadSyncCfg();
   function loadSyncCfg() {
     try { return JSON.parse(localStorage.getItem(SYNC_KEY)) || { url: "", lastSync: 0, enabled: true }; }
@@ -1257,7 +1255,7 @@
   let syncBusy = false, syncTimer = null;
   function syncUrl() {
     if (syncCfg.enabled === false) return "";
-    return (syncCfg.url || DEFAULT_SYNC_URL).replace(/\/+$/, "");
+    return (syncCfg.url || "").replace(/\/+$/, "");
   }
 
   function mergeRemote(days) {
@@ -1317,7 +1315,7 @@
 
   /* ---------- 同步设置面板 ---------- */
   function openSyncPanel() {
-    document.getElementById("syncUrlInput").value = syncCfg.url || DEFAULT_SYNC_URL;
+    document.getElementById("syncUrlInput").value = syncCfg.url || "";
     updateSyncStatus();
     document.getElementById("syncMask").style.display = "flex";
   }
@@ -1337,14 +1335,14 @@
     syncCfg.enabled = false;
     saveSyncCfg();
     setSyncStatus("已断开同步，点“保存并连接”可重新启用");
-    document.getElementById("syncUrlInput").value = DEFAULT_SYNC_URL;
+    document.getElementById("syncUrlInput").value = "";
   }
   function updateSyncStatus() {
     const el = document.getElementById("syncStatus");
     if (syncCfg.enabled === false) { el.textContent = "已断开同步"; return; }
+    if (!syncCfg.url) { el.textContent = "未配置同步地址"; return; }
     const t = syncCfg.lastSync ? new Date(syncCfg.lastSync).toLocaleTimeString() : "从未";
-    const src = syncCfg.url ? "自定义" : "默认";
-    el.textContent = src + "服务器: " + syncUrl() + " · 上次同步 " + t;
+    el.textContent = "服务器: " + syncUrl() + " · 上次同步 " + t;
   }
   function setSyncStatus(msg) {
     const el = document.getElementById("syncStatus");
