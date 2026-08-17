@@ -1,0 +1,17 @@
+{
+  "name": "daily-schedule",
+  "productName": "Daily Schedule",
+  "version": "1.0.0",
+  "description": "A warm, simple schedule management desktop app",
+  "main": "main.js",
+  "author": "user",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^43.4.0",
+    "electron-packager": "^17.1.2"
+  }
+}

@@ -1,0 +1,7 @@
+﻿{
+  "name": "daily-schedule-sync",
+  "version": "1.0.0",
+  "description": "Daily Schedule cloud sync server",
+  "main": "sync-server.js",
+  "private": true
+}
