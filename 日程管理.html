@@ -1452,6 +1452,37 @@
     schedulePush();
   }
 
+  /* ---------- 事件顺延：未完成且未删除的事件自动顺延到当天，直到被完成 ---------- */
+  let lastRollKey = "";
+  function maybeRollover() {
+    const todayK = key(new Date());
+    if (todayK === lastRollKey) return; // 日期没变就不处理
+    lastRollKey = todayK;
+    let changed = false;
+    const keys = Object.keys(events);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      if (k >= todayK) continue; // 今天及以后不动
+      const day = events[k];
+      if (!day || !day.items || !day.items.length) continue;
+      const pending = day.items.filter(function (ev) { return !ev.done; }); // 未完成 = 未删除且未勾选
+      if (!pending.length) continue;
+      // 从旧的一天移除未完成事件（保留已完成的）
+      day.items = day.items.filter(function (ev) { return ev.done; });
+      day.u = Date.now();
+      // 顺延到今天（保留原时间）
+      if (!events[todayK]) events[todayK] = { u: Date.now(), items: [] };
+      for (let j = 0; j < pending.length; j++) events[todayK].items.push(pending[j]);
+      events[todayK].u = Date.now();
+      changed = true;
+    }
+    if (changed) {
+      save();
+      renderAll();
+      schedulePush(); // 顺延结果同步到三端
+    }
+  }
+
   /* ---------- 云端同步 ---------- */
   let syncBusy = false, syncTimer = null, syncRetryTimer = null, syncFails = 0;
   function syncUrl() {
@@ -1629,14 +1660,15 @@
   renderHeader();
   renderCalendar();
   renderEvents();
+  maybeRollover(); // 启动时顺延未完成事件
 
   // 配置过同步则启动时自动拉取合并
   if (syncUrl()) syncNow();
 
-  // 每 5 秒轮询拉取远端改动，实现双端自动同步
-  setInterval(syncPoll, 5000);
+  // 每 5 秒：日期变更检查（事件顺延）+ 轮询拉取远端改动
+  setInterval(function () { maybeRollover(); syncPoll(); }, 5000);
   document.addEventListener("visibilitychange", function () {
-    if (!document.hidden) syncPoll(); // 回到前台立即拉取一次
+    if (!document.hidden) { maybeRollover(); syncPoll(); } // 回到前台立即顺延并拉取
   });
 
   // 支持 #day=YYYY-MM-DD 直达单日视图（含刷新后恢复）
